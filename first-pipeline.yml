@@ -1,6 +1,5 @@
 trigger:
-
-- master
+- '*'
 
 pool:
   vmImage: ubuntu-latest
@@ -10,6 +9,18 @@ steps:
   inputs:
     versionSpec: '3.8'
   displayName: 'Install Python'
-- script: |
-    python --version
-  displayName: 'Check Python Version'
+
+- script: |  
+    python -m pip install --upgrade pip
+    pip install pipenv
+    pipenv --python 3.8
+    pipenv install nose pylint --dev
+  displayName: 'Install dependencies'
+
+- script: |  
+    pipenv run pylint app
+  displayName: 'Lint with pylint'
+
+- script: |  
+    pipenv run nosetests
+  displayName: 'Test with nose'
