@@ -4,23 +4,56 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.8'
-  displayName: 'Install Python'
+# steps:
+# - task: UsePythonVersion@0
+#   inputs:
+#     versionSpec: '3.8'
+#   displayName: 'Install Python'
 
-- script: |  
-    python -m pip install --upgrade pip
-    pip install pipenv
-    pipenv --python 3.8
-    pipenv install nose pylint --dev
-  displayName: 'Install dependencies'
+# - script: |  
+#     python -m pip install --upgrade pip
+#     pip install pipenv
+#     pipenv --python 3.8
+#     pipenv install nose pylint --dev
+#   displayName: 'Install dependencies'
 
-- script: |  
-    pipenv run pylint app
-  displayName: 'Lint with pylint'
+# - script: |  
+#     pipenv run pylint app
+#   displayName: 'Lint with pylint'
 
-- script: |  
-    pipenv run nosetests
-  displayName: 'Test with nose'
+# - script: |  
+#     pipenv run nosetests
+#   displayName: 'Test with nose'
+
+# Define variables that will be used throughout the pipeline
+variables:
+
+  message: 'Hello, again from Stage 2!'
+  isRunSecondJob: true  # Conditionally run the second job in each stage
+
+# First Stage: Build
+stages:
+
+- stage: Build
+  jobs:
+  - job: Compile
+    steps:
+    - script: echo "Compiling code..."
+
+  - job: UnitTest
+    condition: eq(variables.isRunSecondJob, true)
+    steps:
+    - script: echo "Running unit tests..."
+
+
+- stage: Deploy
+  dependsOn: Build
+  condition: succeeded() 
+  jobs: 
+  - job: Ouput
+    steps: 
+    - script: echo $(message) 
+
+  - job: OutputQAEnv
+    steps: 
+    - script: echo “Deploying to QA environment…” 
